@@ -1,0 +1,78 @@
+---
+- name: Configure Nginx web servers
+  hosts: webservers
+  become: true
+
+  tasks:
+    - name: Update apt cache and install packages
+      ansible.builtin.apt:
+        update_cache: true
+        name:
+          - nginx
+          - curl
+          - ufw
+        state: present
+        cache_valid_time: 3600
+
+    - name: Deploy website
+      ansible.builtin.copy:
+        src: files/index.html
+        dest: "{{ web_root }}/index.html"
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Install health check script
+      ansible.builtin.copy:
+        src: files/check_nginx.sh
+        dest: /usr/local/bin/check_nginx.sh
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Create health check log
+      ansible.builtin.file:
+        path: "{{ status_log }}"
+        state: touch
+        owner: ubuntu
+        group: ubuntu
+        mode: "0644"
+        access_time: preserve
+        modification_time: preserve
+
+    - name: Ensure Nginx is enabled and running
+      ansible.builtin.service:
+        name: nginx
+        state: started
+        enabled: true
+        
+    - name: Allow SSH in firewall
+      community.general.ufw:
+        rule: allow
+        port: "22"
+        proto: tcp
+
+    - name: Allow HTTP in firewall
+      community.general.ufw:
+        rule: allow
+        port: "80"
+        proto: tcp
+
+    - name: Enable firewall (deny by default)
+      community.general.ufw:
+        state: enabled
+        policy: deny
+        direction: incoming
+
+    - name: Configure health check cron job
+      ansible.builtin.cron:
+        name: "Check Nginx availability"
+        user: ubuntu
+        minute: "*/5"
+        job: "/usr/local/bin/check_nginx.sh"
+
+    - name: Run health check immediately
+      ansible.builtin.command:
+        cmd: /usr/local/bin/check_nginx.sh
+      become: false
+      changed_when: false

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Nginx AWS Infrastructure</title>
+    <style>
+        :root {
+            --bg-1: #0f172a;
+            --bg-2: #1e293b;
+            --card: rgba(255, 255, 255, 0.06);
+            --border: rgba(255, 255, 255, 0.12);
+            --text: #e2e8f0;
+            --muted: #94a3b8;
+            --accent: #22c55e;
+            --accent-2: #38bdf8;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(1200px 600px at 10% -10%, #1e3a8a55, transparent 60%),
+                radial-gradient(1000px 500px at 110% 110%, #0891b255, transparent 60%),
+                linear-gradient(160deg, var(--bg-1), var(--bg-2));
+        }
+
+        .card {
+            width: 100%;
+            max-width: 760px;
+            padding: 40px 36px;
+            border-radius: 20px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow:
+                0 20px 60px rgba(0, 0, 0, 0.45),
+                inset 0 1px 0 rgba(255, 255, 255, 0.06);
+            animation: rise 0.6s ease-out both;
+        }
+
+        @keyframes rise {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 14px;
+            border-radius: 999px;
+            background: rgba(34, 197, 94, 0.12);
+            border: 1px solid rgba(34, 197, 94, 0.35);
+            color: #86efac;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+            box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%   { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+            70%  { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        }
+
+        h1 {
+            margin: 20px 0 8px;
+            font-size: clamp(28px, 4vw, 40px);
+            line-height: 1.15;
+            letter-spacing: -0.02em;
+            background: linear-gradient(90deg, #f8fafc, #93c5fd);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .subtitle {
+            margin: 0 0 28px;
+            color: var(--muted);
+            font-size: 16px;
+            line-height: 1.5;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+            margin-top: 8px;
+        }
+
+        .item {
+            padding: 16px 18px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
+            transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+        }
+
+        .item:hover {
+            transform: translateY(-2px);
+            border-color: rgba(56, 189, 248, 0.45);
+            background: rgba(56, 189, 248, 0.06);
+        }
+
+        .label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+        .value {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text);
+            word-break: break-word;
+        }
+
+        .value.accent { color: var(--accent-2); }
+
+        footer {
+            margin-top: 32px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 20px;
+            justify-content: space-between;
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        footer code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            color: #cbd5e1;
+            background: rgba(255, 255, 255, 0.06);
+            padding: 2px 6px;
+            border-radius: 6px;
+        }
+
+        @media (max-width: 480px) {
+            .card { padding: 28px 22px; }
+            footer { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <main class="card">
+        <span class="status">
+            <span class="dot"></span>
+            Nginx работает
+        </span>
+
+        <h1>Инфраструктура развёрнута</h1>
+        <p class="subtitle">
+            Веб-сервер успешно настроен с помощью Ansible и доступен через Application Load Balancer.
+        </p>
+
+        <div class="grid">
+            <div class="item">
+                <div class="label">Проект</div>
+                <div class="value">nginx-aws-infra</div>
+            </div>
+            <div class="item">
+                <div class="label">Платформа</div>
+                <div class="value">AWS EC2</div>
+            </div>
+            <div class="item">
+                <div class="label">Балансировщик</div>
+                <div class="value">Application LB</div>
+            </div>
+            <div class="item">
+                <div class="label">Конфигурация</div>
+                <div class="value accent">Ansible</div>
+            </div>
+        </div>
+
+        <footer>
+            <span>Nginx · Ubuntu · Terraform</span>
+            <span>Health-check: <code>/usr/local/bin/check_nginx.sh</code></span>
+        </footer>
+    </main>
+</body>
+</html>

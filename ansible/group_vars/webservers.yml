@@ -1,0 +1,5 @@
+---
+cloud_provider: aws
+ansible_user: ubuntu
+web_root: /var/www/html
+status_log: /home/ubuntu/nginx_status.log
